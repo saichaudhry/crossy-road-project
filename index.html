@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <meta name="theme-color" content="#8ed0ef" />
+  <meta name="description" content="A voxel hop-across-the-traffic arcade game built with Three.js." />
+  <title>Crossy Road</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%234aa14a'/><rect x='9' y='8' width='14' height='13' fill='%23fffdf6'/><rect x='12' y='21' width='3' height='4' fill='%23f6a623'/><rect x='17' y='21' width='3' height='4' fill='%23f6a623'/><rect x='11' y='11' width='3' height='3' fill='%2317212e'/><rect x='18' y='11' width='3' height='3' fill='%2317212e'/><rect x='14' y='4' width='4' height='4' fill='%23e4453a'/></svg>" />
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <div id="ui">
+    <div class="hud">
+      <div class="score" id="score" aria-live="polite">0<small>score</small></div>
+      <div class="hud-right">
+        <div class="pill" data-ui><span class="coin-dot"></span><span id="coins">0</span></div>
+        <div class="icon-row">
+          <button class="icon-btn" id="btn-sound" data-ui title="Sound (M)" aria-label="Toggle sound">🔊</button>
+          <button class="icon-btn" id="btn-pause" data-ui title="Pause (Esc)" aria-label="Pause">❚❚</button>
+        </div>
+      </div>
+    </div>
+
+    <div></div>
+
+    <div class="dpad" data-ui>
+      <button class="up" data-dir="forward" aria-label="Hop forward">▲</button>
+      <button class="left" data-dir="left" aria-label="Hop left">◀</button>
+      <button class="down" data-dir="back" aria-label="Hop back">▼</button>
+      <button class="right" data-dir="right" aria-label="Hop right">▶</button>
+    </div>
+  </div>
+
+  <div class="hint" id="hint" hidden>Tap, swipe or press ↑ to hop</div>
+  <div class="flash" id="flash"></div>
+
+  <!-- Title -->
+  <div class="overlay show" id="screen-title">
+    <div class="card" data-ui>
+      <h1 class="logo"><span class="a">CROSSY</span><span class="b">ROAD</span></h1>
+      <p class="tagline">How far can you get?</p>
+      <div class="stat-row">
+        <div class="stat"><b id="title-best">0</b><span>best</span></div>
+        <div class="stat"><b id="title-coins">0</b><span>coins</span></div>
+      </div>
+      <button class="big-btn" id="btn-play">PLAY</button>
+      <button class="big-btn ghost" id="btn-shop">CHARACTERS</button>
+      <p class="keys">
+        <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> or <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> to hop<br />
+        Swipe or tap on touch screens
+      </p>
+    </div>
+  </div>
+
+  <!-- Game over -->
+  <div class="overlay" id="screen-over">
+    <div class="card" data-ui>
+      <p class="new-best" id="over-flag">&nbsp;</p>
+      <h2 class="logo" style="font-size: clamp(26px, 6vmin, 36px)"><span id="over-cause">Squashed!</span></h2>
+      <div class="stat-row">
+        <div class="stat"><b id="over-score">0</b><span>score</span></div>
+        <div class="stat"><b id="over-best">0</b><span>best</span></div>
+        <div class="stat"><b id="over-coins">0</b><span>coins</span></div>
+      </div>
+      <button class="big-btn" id="btn-again">PLAY AGAIN</button>
+      <button class="big-btn ghost" id="btn-shop2">CHARACTERS</button>
+    </div>
+  </div>
+
+  <!-- Characters -->
+  <div class="overlay" id="screen-shop">
+    <div class="card" data-ui>
+      <h2 class="logo" style="font-size: clamp(26px, 6vmin, 36px)"><span class="a">CHARACTERS</span></h2>
+      <p class="tagline"><span class="coin-dot" style="display:inline-block;vertical-align:-3px"></span>
+        <span id="shop-coins">0</span> coins &middot; collect them on the grass</p>
+      <div class="grid" id="char-grid"></div>
+      <button class="big-btn" id="btn-close-shop">DONE</button>
+    </div>
+  </div>
+
+  <!-- Paused -->
+  <div class="overlay" id="screen-pause">
+    <div class="card" data-ui>
+      <h2 class="logo" style="font-size: clamp(26px, 6vmin, 36px)"><span class="b">PAUSED</span></h2>
+      <button class="big-btn" id="btn-resume">RESUME</button>
+      <button class="big-btn ghost" id="btn-quit">QUIT TO MENU</button>
+    </div>
+  </div>
+
+  <!-- Three.js is committed into ./vendor so the page needs no build step and
+       no network beyond this folder: it runs as-is on GitHub Pages. -->
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.js" } }
+  </script>
+  <script type="module" src="./src/main.js"></script>
+</body>
+</html>
