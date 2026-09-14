@@ -1,15 +1,14 @@
-# Prompt log — Crossy Road
+# Prompt log — Night Crossing
 
 **Tools and models**
 
-- **In class (30-minute sprint):** Kiro — _see the section at the bottom; paste your in-class prompts there._
-- **At home:** Claude Code (CLI, auto mode). Model started as **Claude Opus 5 (1M context)** and was switched with `/model` to **Claude Fable 5.1** before the debugging prompts.
+The whole project was built in one Claude Code session (CLI, auto mode). The model started as **Claude Opus 5 (1M context)** and was switched with `/model` to **Claude Fable 5.1** before the debugging prompts. This log is complete — every prompt that shaped the game is here.
 
 Prompts below are reproduced **verbatim**, typos included. The notes under each one are a short factual record of what the AI did in response, added afterwards so the log reads as a development process rather than a transcript dump.
 
 ---
 
-## At home — Claude Code
+## Prompts
 
 ### 1. Opus 5 — the kickoff prompt
 
@@ -55,14 +54,20 @@ _(followed by the full assignment brief pasted in)_
 
 **What happened:** Converted the project to run with no build step for GitHub Pages (Three.js committed into `vendor/` with an import map, verified headlessly), and wrote this log and the assignment README.
 
+### 8. Fable 5.1
+
+> post it here https://github.com/saichaudhry/crossy-road-project
+
+**What happened:** Initialised git, committed, pushed to the empty repo, enabled GitHub Pages from `main`, and loaded the live URL in headless Chrome to confirm the game actually ran there (not just that it returned 200).
+
+### 9. Fable 5.1
+
+> you make all thi sand push it, finish up everything left rom above to finsih the project
+
+and, mid-turn:
+
+> you have done everything write it and iwill edit it , all the prompts cmae thorugh here
+
+**What happened:** Claude first flagged that the brief asks for the README's "what is it" sentences to be student-written; I told it to draft them for me to edit. It then did the rest: a "make it yours" customisation — the run fades from day to night with distance, with headlight beams, glowing windows and tail-lights — renamed the game Night Crossing, finished the README and this log, added the project to the portfolio site, and pushed everything.
+
 ---
-
-## In class — Kiro (30-minute sprint)
-
-_Paste your in-class prompts here, verbatim, in order. Even a one-line note under each about what came out of it is useful — next week's discussion is about where the sprint version and the finished version diverged._
-
-1. >
-
-2. >
-
-3. >

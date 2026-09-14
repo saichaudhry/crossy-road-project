@@ -11,6 +11,26 @@ import { TILE } from '../core/constants.js';
 const UNIT_BOX = new THREE.BoxGeometry(1, 1, 1);
 const materialCache = new Map();
 
+// --- Night ------------------------------------------------------------------
+// The run gets darker the further it goes. These shared materials are the
+// parts of the world that respond: lamps brighten and headlight beams fade in
+// on the road. `setNight(0..1)` is called once a frame by the renderer.
+export const NIGHT = {
+  headlight: new THREE.MeshLambertMaterial({ color: 0xfff3b0, emissive: 0x000000 }),
+  taillight: new THREE.MeshLambertMaterial({ color: 0xd0453a, emissive: 0x000000 }),
+  beam: new THREE.MeshBasicMaterial({
+    color: 0xfff1a8, transparent: true, opacity: 0, depthWrite: false,
+  }),
+  window: new THREE.MeshLambertMaterial({ color: 0x2b3550, emissive: 0x000000 }),
+};
+
+export function setNight(k) {
+  NIGHT.headlight.emissive.setScalar(0).lerp(new THREE.Color(0xfff0a0), k);
+  NIGHT.taillight.emissive.setScalar(0).lerp(new THREE.Color(0xff2a1a), k * 0.9);
+  NIGHT.window.emissive.setScalar(0).lerp(new THREE.Color(0xe8b96a), k * 0.28);
+  NIGHT.beam.opacity = 0.38 * k;
+}
+
 export function material(colour, opts = {}) {
   const key = `${colour}|${opts.flat ? 1 : 0}|${opts.opacity ?? 1}|${opts.emissive ?? 0}`;
   let mat = materialCache.get(key);
@@ -126,12 +146,16 @@ export function buildVehicle(occ) {
     const cargoLen = length - cabLen - 6;
     const nose = length / 2 - cabLen / 2;
     g.add(box(cabLen, 24, width, colour, nose, 8, 0, { anchor: 'bottom' }));
-    g.add(box(cabLen - 12, 13, width - 3, 0x2b3550, nose - 2, 30, 0, { anchor: 'bottom' }));
+    const cabWindow = box(cabLen - 12, 13, width - 3, 0, nose - 2, 30, 0, { anchor: 'bottom' });
+    cabWindow.material = NIGHT.window;
+    g.add(cabWindow);
     g.add(box(cargoLen, 34, width + 2, 0xe9ecef, -length / 2 + cargoLen / 2, 9, 0, { anchor: 'bottom' }));
     g.add(box(cargoLen - 8, 22, width + 3, 0xd3d8de, -length / 2 + cargoLen / 2, 15, 0, { anchor: 'bottom' }));
   } else if (kind === 'van') {
     g.add(box(length, 26, width, colour, 0, 6, 0, { anchor: 'bottom' }));
-    g.add(box(length - 26, 13, width - 4, 0x2b3550, -5, 24, 0, { anchor: 'bottom' }));
+    const vanWindow = box(length - 26, 13, width - 4, 0, -5, 24, 0, { anchor: 'bottom' });
+    vanWindow.material = NIGHT.window;
+    g.add(vanWindow);
     g.add(box(length * 0.4, 11, width + 1, 0xf2f2f2, -length * 0.24, 14, 0, { anchor: 'bottom' }));
   } else {
     // car / taxi: a low body with a small cabin set slightly back, so it never
@@ -140,9 +164,11 @@ export function buildVehicle(occ) {
     g.add(box(length, 15, width, colour, 0, 6, 0, { anchor: 'bottom' }));
     g.add(box(length * 0.44, 12, width - 8, roof, -length * 0.06, 20, 0, { anchor: 'bottom' }));
     // windscreen and rear window, so the cabin has a front
-    g.add(box(3, 8, width - 9, 0x2b3550, length * 0.16, 22, 0, { anchor: 'bottom' }));
-    g.add(box(3, 8, width - 9, 0x2b3550, -length * 0.28, 22, 0, { anchor: 'bottom' }));
-    g.add(box(length * 0.36, 3, width - 9, 0x2b3550, -length * 0.06, 31, 0, { anchor: 'bottom' }));
+    for (const w of [
+      box(3, 8, width - 9, 0, length * 0.16, 22, 0, { anchor: 'bottom' }),
+      box(3, 8, width - 9, 0, -length * 0.28, 22, 0, { anchor: 'bottom' }),
+      box(length * 0.36, 3, width - 9, 0, -length * 0.06, 31, 0, { anchor: 'bottom' }),
+    ]) { w.material = NIGHT.window; g.add(w); }
     if (kind === 'taxi') {
       g.add(box(11, 5, 7, 0x2b2b2b, -length * 0.06, 34, 0, { anchor: 'bottom' }));
       g.add(box(length * 0.62, 5, width + 1, 0x2b2b2b, 0, 11, 0, { anchor: 'bottom' }));
@@ -152,10 +178,18 @@ export function buildVehicle(occ) {
   wheels(g, length, width);
   // head- and tail-lights: the vehicle model points along +X and gets flipped
   // by the row view when it travels the other way.
-  g.add(box(4, 5, 7, 0xfff3b0, length / 2 - 1, 10, -width / 2 + 6, { anchor: 'bottom' }));
-  g.add(box(4, 5, 7, 0xfff3b0, length / 2 - 1, 10, width / 2 - 6, { anchor: 'bottom' }));
-  g.add(box(4, 5, 7, 0xd0453a, -length / 2 + 1, 10, -width / 2 + 6, { anchor: 'bottom' }));
-  g.add(box(4, 5, 7, 0xd0453a, -length / 2 + 1, 10, width / 2 - 6, { anchor: 'bottom' }));
+  for (const side of [-1, 1]) {
+    const head = box(4, 5, 7, 0, length / 2 - 1, 10, side * (width / 2 - 6), { anchor: 'bottom' });
+    head.material = NIGHT.headlight;
+    const tail = box(4, 5, 7, 0, -length / 2 + 1, 10, side * (width / 2 - 6), { anchor: 'bottom' });
+    tail.material = NIGHT.taillight;
+    g.add(head, tail);
+  }
+  // Headlight beam on the road ahead; invisible by day.
+  const beam = box(64, 1.5, width + 16, 0, length / 2 + 33, 1.2, 0, { anchor: 'bottom', cast: false, receive: false });
+  beam.material = NIGHT.beam;
+  beam.renderOrder = 2;
+  g.add(beam);
   return g;
 }
 
@@ -174,7 +208,9 @@ export function buildTrain(carriages) {
   for (let i = 0; i < carriages; i++) {
     const cx = x - carLen / 2 + 1;
     g.add(box(carLen - 8, 42, 38, 0x4a5a86, cx, 6, 0, { anchor: 'bottom' }));
-    g.add(box(carLen - 26, 14, 40, 0xbfd3ef, cx, 26, 0, { anchor: 'bottom' }));
+    const win = box(carLen - 26, 14, 40, 0, cx, 26, 0, { anchor: 'bottom' });
+    win.material = NIGHT.window;
+    g.add(win);
     g.add(box(carLen - 8, 6, 40, 0x36446b, cx, 48, 0, { anchor: 'bottom' }));
     x -= carLen;
   }

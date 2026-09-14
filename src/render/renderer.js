@@ -4,9 +4,14 @@ import {
 } from '../core/constants.js';
 import { getCharacter } from '../core/characters.js';
 import { createRowView, WATER_TOP, RIDE_HEIGHT } from './rowViews.js';
-import { buildCharacter, buildEagle, buildSplash } from './models.js';
+import { buildCharacter, buildEagle, buildSplash, setNight } from './models.js';
 
 const SKY = 0x8ed0ef;
+const SKY_NIGHT = 0x141a33;
+// Dusk starts here and it is fully dark this many rows later. Distance is the
+// only clock: the further the run, the darker the road.
+const DUSK_ROW = 45;
+const NIGHT_ROWS = 110;
 // A 4-degree yaw and a 52-degree pitch: lanes stay readable and horizontal,
 // with just enough turn to show one end of every vehicle.
 const CAM_DIR = new THREE.Vector3(0.043, 0.794, 0.619).normalize();
@@ -51,7 +56,8 @@ export function createRenderer(canvas, options = {}) {
   gauge.quaternion.copy(camera.quaternion);
   gauge.updateMatrixWorld(true);
 
-  scene.add(new THREE.AmbientLight(0xd7ecff, 1.15));
+  const ambient = new THREE.AmbientLight(0xd7ecff, 1.15);
+  scene.add(ambient);
   const hemi = new THREE.HemisphereLight(0xbfe6ff, 0x4b6a3a, 0.55);
   scene.add(hemi);
 
@@ -312,6 +318,38 @@ export function createRenderer(canvas, options = {}) {
     sun.target.updateMatrixWorld();
   }
 
+  // --- time of day -----------------------------------------------------------
+  const DAY = {
+    sky: new THREE.Color(SKY), ambient: new THREE.Color(0xd7ecff), ambientI: 1.15,
+    hemiSky: new THREE.Color(0xbfe6ff), hemiGround: new THREE.Color(0x4b6a3a), hemiI: 0.55,
+    sun: new THREE.Color(0xfff3d6), sunI: 1.35,
+  };
+  const DUSK = {
+    sky: new THREE.Color(SKY_NIGHT), ambient: new THREE.Color(0x5b6a9e), ambientI: 0.55,
+    hemiSky: new THREE.Color(0x3a4a80), hemiGround: new THREE.Color(0x1c2a1c), hemiI: 0.3,
+    sun: new THREE.Color(0xa9b8ff), sunI: 0.42,
+  };
+  const tmp = new THREE.Color();
+  let nightNow = -1;
+
+  function applyTimeOfDay(state) {
+    const t = Math.min(1, Math.max(0, (state.camera.row - DUSK_ROW) / NIGHT_ROWS));
+    const k = t * t * (3 - 2 * t);
+    if (Math.abs(k - nightNow) < 0.002) return;
+    nightNow = k;
+    scene.background.copy(DAY.sky).lerp(DUSK.sky, k);
+    scene.fog.color.copy(scene.background);
+    ambient.color.copy(DAY.ambient).lerp(DUSK.ambient, k);
+    ambient.intensity = DAY.ambientI + (DUSK.ambientI - DAY.ambientI) * k;
+    hemi.color.copy(DAY.hemiSky).lerp(DUSK.hemiSky, k);
+    hemi.groundColor.copy(DAY.hemiGround).lerp(DUSK.hemiGround, k);
+    hemi.intensity = DAY.hemiI + (DUSK.hemiI - DAY.hemiI) * k;
+    sun.color.copy(DAY.sun).lerp(DUSK.sun, k);
+    sun.intensity = DAY.sunI + (DUSK.sunI - DAY.sunI) * k;
+    setNight(k);
+    document.body.style.background = `#${tmp.copy(scene.background).getHexString()}`;
+  }
+
   let shakeT = 0;
   const shake = () => { shakeT = 0.32; };
 
@@ -332,6 +370,7 @@ export function createRenderer(canvas, options = {}) {
 
   function render(state, dt) {
     checkQuality(dt);
+    applyTimeOfDay(state);
     syncRows(state);
     animatePlayer(state, dt);
     animateEagle(state, dt);
@@ -350,6 +389,7 @@ export function createRenderer(canvas, options = {}) {
   function clearRows() {
     for (const view of views.values()) view.dispose();
     views.clear();
+    nightNow = -1;                 // a new run starts at daybreak
     rideY = 0;
     facing = 0;
     splashT = -1;

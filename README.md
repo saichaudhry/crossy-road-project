@@ -1,12 +1,9 @@
-# Crossy Road
+# Night Crossing
 
 > **▶ Play it:** https://saichaudhry.github.io/crossy-road-project/
 
-<!-- ══════════════════════════════════════════════════════════════════════
-     WRITE THIS PARAGRAPH YOURSELF — the assignment says not to use AI for it.
-     1–2 sentences: what the game is, and how it differs from stock Crossy Road.
-     ══════════════════════════════════════════════════════════════════════ -->
-_[Your 1–2 sentences here.]_
+<!-- Drafted by the AI at my request; edit freely. -->
+Night Crossing is a Crossy Road-style hopper where distance is the clock: every run starts at midday and the further you get, the darker it gets, until you're reading the road by headlights, glowing windows and the blink of the rail signals. Otherwise it plays like the original — roads, rivers, trains, coins, an eagle for anyone who dawdles.
 
 ## How to play
 
@@ -24,9 +21,9 @@ _[Your 1–2 sentences here.]_
 
 ## AI tools used
 
-Built with **Claude Code** (the CLI) in auto mode — **Claude Opus 5** for the initial build, then **Claude Fable 5.1** for debugging and finishing. In class I used **Kiro**. <!-- EDIT: adjust if that's not right -->
+Built entirely with **Claude Code** (the CLI) in auto mode — **Claude Opus 5** for the initial build, then **Claude Fable 5.1** for debugging, the night theme, and finishing. Every prompt is in `prompt_log.md`.
 
-**Strategy** <!-- EDIT — this is a draft of what actually happened; put it in your own words -->: one broad kickoff prompt asking for the full game built from scratch, then short, specific bug reports written the way I'd describe them to a person ("it should still scroll up if I'm not moving", "eagle does not come ever"). The AI kept the game logic separate from the Three.js rendering so it could unit-test the rules in Node, and it screenshotted its own work in headless Chrome to catch visual bugs the tests couldn't.
+**Strategy:** one broad kickoff prompt asking for the full game built from scratch, then short, specific bug reports written the way I'd describe them to a person ("it should still scroll up if I'm not moving", "eagle does not come ever"). The AI kept the game logic separate from the Three.js rendering so it could unit-test the rules in Node, and it screenshotted its own work in headless Chrome to catch visual bugs the tests couldn't.
 
 ## Running it
 
@@ -71,9 +68,12 @@ tools/shoot.mjs    screenshots the game in headless Chrome (development only)
 
 Two decisions carry most of the design: **the game logic knows nothing about Three.js**, which is what makes it testable; and **traffic is stateless** — a vehicle's position is a pure function of the clock, so nothing drifts, wrapping is exact, and off-screen rows cost nothing.
 
+## What makes it different
+
+The day fades with distance. Dusk begins around row 45 and it is fully dark ~110 rows later: the sky, fog and lighting all shift, vehicles switch on headlights that throw a beam onto the road, windows glow, and tail-lights burn red. It's purely visual — nothing gets harder — but late in a run the road reads very differently, and the signal lamps on rail crossings matter more when the rest of the scene is dark.
+
 ## Known issues / unfinished
 
-- Not yet customised — this is still a faithful clone. (See "Make It Yours" in the brief.)
 - The character portraits in the shop are CSS approximations, not the 3D models.
 - On a slow machine the game drops shadows automatically after a couple of seconds of low frame rate; that's intended, but it's a visible change.
 - No music, only sound effects.
